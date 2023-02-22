@@ -9,11 +9,13 @@ const GENERATE_TOKEN = (user: any) => {
     { expiresIn: "1d" }
   );
 
-  const resfresh_token = jwt.sign(
+  const refresh_token = jwt.sign(
     { id: user._id },
     process.env.JWT_SECRET || "",
     { expiresIn: "30d" }
   );
+
+  return {access_token, refresh_token}
 };
 
 export default GENERATE_TOKEN;
