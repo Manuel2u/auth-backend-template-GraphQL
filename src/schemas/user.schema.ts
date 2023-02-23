@@ -15,9 +15,27 @@ const userType = new GraphQLObjectType({
   }),
 });
 
+const userQuery = {
+  getUser: {
+    type: userType,
+    args: {
+      id: { type: new GraphQLNonNull(GraphQLString) },
+    },
+    async resolve(parent: any, args: any) {
+      return args;
+    },
+  },
+};
+
 const userMutation = {
   createUser: {
-    type: userType,
+    type: new GraphQLObjectType({
+      name: "CreateUser",
+      fields: {
+        user: { type: userType },
+        access_token: { type: new GraphQLNonNull(GraphQLString) },
+      },
+    }),
     args: {
       fName: { type: new GraphQLNonNull(GraphQLString) },
       lName: { type: new GraphQLNonNull(GraphQLString) },
@@ -37,13 +55,15 @@ const userMutation = {
 
         const alreadyExistingUser = await User.findOne({ email: email });
 
-        const alreadyExistingUser_2 = await User.findOne({ email: email });
+        const alreadyExistingUser_2 = await User.findOne({
+          userName: username,
+        });
 
         if (alreadyExistingUser || alreadyExistingUser_2) {
           throw new Error("User already exists");
         }
 
-        signUpUser(info, async (err: any, user: any) => {
+        return signUpUser(info, async (err: any, user: any) => {
           if (err) {
             throw new Error(`${err}`);
           }
@@ -54,14 +74,14 @@ const userMutation = {
           await user.save();
 
           // Set the access token as a cookie in the response object
-          context.response.cookie("access_token", access_token, {
-            maxAge: 24 * 60 * 60 * 1000, // 1 day
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-          });
+          //   context.response.cookie("access_token", access_token, {
+          //     maxAge: 24 * 60 * 60 * 1000, // 1 day
+          //     httpOnly: true,
+          //     secure: process.env.NODE_ENV === "production",
+          //   });
 
           // Return the created user object
-          return user;
+          return { user, access_token };
         });
       } catch (err) {
         throw err;
@@ -70,4 +90,4 @@ const userMutation = {
   },
 };
 
-export { userMutation, userType };
+export { userMutation, userType, userQuery };

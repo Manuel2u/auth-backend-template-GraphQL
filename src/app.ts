@@ -4,17 +4,17 @@ import DB_CONNECT from "./config/dbConnect";
 import { GraphQLObjectType, GraphQLSchema } from "graphql";
 import { graphqlHTTP } from "express-graphql";
 import verifyToken from "./middleware/authentication";
-import { userMutation } from "./schemas/user.schema";
+import { userMutation,userQuery } from "./schemas/user.schema";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(customError);
 
-app.use(verifyToken);
-
 const ROOT_QUERY = new GraphQLObjectType({
   name: "RootQueryType",
-  fields: {},
+  fields: {
+    ...userQuery,
+  },
 });
 
 const ROOT_MUTATION = new GraphQLObjectType({
@@ -31,6 +31,7 @@ const schema = new GraphQLSchema({
 
 app.use(
   "/graphql",
+  verifyToken,
   graphqlHTTP({
     schema,
     graphiql: true,

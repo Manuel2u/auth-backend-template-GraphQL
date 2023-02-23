@@ -9,11 +9,20 @@ declare module "express-serve-static-core" {
 
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   const skipAuth = ["createUser", "logUserIn"]; // Add the names of mutations that don't require authentication
-  const { operationName } = req.body;
 
-  if (skipAuth.includes(operationName)) {
-    // Skip authentication for certain mutations
+  // If the request is for the root route or the /graphql endpoint, skip token verification
+  if (req.path === "/" || req.path === "/graphql") {
     return next();
+  }
+
+  // Check that the request is a GraphQL request
+  if (req.body && req.body.operationName) {
+    const { operationName } = req.body;
+
+    if (skipAuth.includes(operationName)) {
+      // Skip authentication for certain mutations
+      return next();
+    }
   }
 
   let token;

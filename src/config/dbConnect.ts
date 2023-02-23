@@ -18,6 +18,7 @@ const DB_CONNECT = async () => {
 
   try {
     await mongoose.connect(MONGODB_URI, { autoIndex: true });
+    console.log("connected to the database succesfully")
   } catch (err) {
     console.log(err);
     throw new Error("Error connecting db");
