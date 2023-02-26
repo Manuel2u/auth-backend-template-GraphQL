@@ -1,17 +1,4 @@
-// import { GraphQLObjectType, GraphQLString, GraphQLNonNull } from "graphql";
-
-// const userType = new GraphQLObjectType({
-//   name: "User",
-//   fields: () => ({
-//     id: { type: GraphQLString },
-//     fName: { type: GraphQLString },
-//     lName: { type: GraphQLString },
-//     username: { type: GraphQLString },
-//     email: { type: GraphQLString },
-//     password: { type: GraphQLString },
-//   }),
-// });
-
+// schema types
 const typeDefs = `
 type User {
   id: String
@@ -20,6 +7,7 @@ type User {
   username: String!
   email: String!
   password: String!
+  token : String
 }
 
 type Query {
@@ -30,19 +18,5 @@ type Mutation {
   createUser(fName: String, lName: String, email: String, username: String, password: String): User
 }
 `;
-// const userQuery = {
-//   getUser: {
-//     type: userType,
-//     args: {
-//       id: { type: new GraphQLNonNull(GraphQLString) },
-//     },
-//     async resolve(parent: any, args: any) {
-//       return args;
-//     },
-//   },
-// };
-
-
 
 export { typeDefs}
-// export { userMutation, userType, userQuery };

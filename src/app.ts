@@ -4,39 +4,22 @@ import DB_CONNECT from "./config/dbConnect";
 import { buildSchema } from "graphql";
 import { graphqlHTTP } from "express-graphql";
 import verifyToken from "./middleware/authentication";
-import {typeDefs} from "./schemas/user.schema";
-import {createUserResolver, getUserResolver} from "./resolvers/user.resolvers";
+import { typeDefs } from "./schemas/user.schema";
+import {
+  createUserResolver,
+  getUserResolver,
+} from "./resolvers/user.resolvers";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(customError);
 
-// const ROOT_QUERY = new GraphQLObjectType({
-//   name: "RootQueryType",
-//   fields: {
-//     ...userQuery,
-//   },
-// });
-
-// const ROOT_MUTATION = new GraphQLObjectType({
-//   name: "RootMutationType",
-//   fields: {
-//     ...userMutation,
-//   },
-// });
-
-// const schema = new GraphQLSchema({
-//   mutation: ROOT_MUTATION,
-//   query: ROOT_QUERY,
-// });
-
-const schema = buildSchema(typeDefs)
+const schema = buildSchema(typeDefs);
 
 const rootValue = {
-  createUser : createUserResolver,
-  user : getUserResolver
-}
-
+  createUser: createUserResolver,
+  user: getUserResolver,
+};
 
 app.use(
   "/graphql",
