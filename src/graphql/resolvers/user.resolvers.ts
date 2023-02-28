@@ -2,7 +2,11 @@ import User from "../../models/user.model";
 import GENERATE_TOKEN from "../../utils/token";
 import { signUpUser } from "../../utils";
 
-const createUserResolver = async (parent: any, args: any, context: any) => {
+const createUserResolver = async (
+  parent: any,
+  args: any,
+  contextValue: any
+) => {
   try {
     const { fName, lName, username, email, password } = args.input;
 
@@ -36,7 +40,7 @@ const createUserResolver = async (parent: any, args: any, context: any) => {
     await user.save();
 
     return {
-     user,
+      user,
       access_token,
     };
   } catch (err) {

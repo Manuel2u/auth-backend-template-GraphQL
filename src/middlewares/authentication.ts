@@ -1,28 +1,29 @@
 import jwt from "jsonwebtoken";
 
-interface MyContext {
-  req: any; 
-}
 
-const verifyToken = ({ req }: MyContext) => {
-  let token;
+const verifyToken =  async ({ req } : any) => {
+  let token = req.headers.authorization?.split(" ")[1] ?? "";
 
   try {
-    token = req.headers.authorization?.split(" ")[1];
+    if (token) {
+      const decoded: any = jwt.verify(
+        token,
+        process.env.JWT_SECRET || ""
+      );
 
-    const decoded: any = jwt.verify(token || "", process.env.JWT_SECRET || "");
+      if (decoded.exp < Date.now() / 1000) {
+        throw new Error("Token Expired");
+      }
 
-    if (decoded.exp < Date.now() / 1000) {
-      throw new Error("Token Expired");
+      const { id } = decoded;
+      return { id };
+    } else {
+      return null;
     }
-
-    req.user = decoded;
   } catch (err) {
+    console.log(err);
     throw new Error("Unauthorized access");
   }
-  if (!token) {
-    throw new Error("Unauthorized access");
-  }
-};
+}
 
 export default verifyToken;
