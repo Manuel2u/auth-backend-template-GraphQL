@@ -2,11 +2,12 @@ import User from "../models/user.model";
 import bcrypt from "bcryptjs";
 import { signInInfo, signUpInfo } from "../types";
 import { GraphQLError } from "graphql";
+import { ApolloError } from "apollo-server-errors";
 
 const signUpUser = async (info: signUpInfo, callback: any) => {
   bcrypt.hash(info.password, 10, async (err, hash) => {
     if (err) {
-      throw new Error(`error : ${err}`);
+      throw new GraphQLError(`error : ${err}`);
     }
 
     const user = new User({
@@ -24,9 +25,9 @@ const signUpUser = async (info: signUpInfo, callback: any) => {
 
 const signInUser = async (info: signInInfo, callbck: any) => {
   try {
-    const foundUser_by_email_or_username = await User.findOne(
-      { email: info.email_username } || { username: info.email_username }
-    );
+    const foundUser_by_email_or_username = await User.findOne({
+      $or: [{ email: info.email_username }, { username: info.email_username }],
+    });
 
     if (foundUser_by_email_or_username) {
       bcrypt.compare(
@@ -39,10 +40,15 @@ const signInUser = async (info: signInInfo, callbck: any) => {
         }
       );
     } else {
-      throw new GraphQLError("User not found");
+      // throw new GraphQLError("User not found");
+      throw new ApolloError("user not found");
     }
   } catch (err) {
-    throw new GraphQLError(`${err}`);
+    throw new GraphQLError(`${err}`, {
+      extensions: {
+        code: "FORBIDDEN",
+      },
+    });
   }
 };
 

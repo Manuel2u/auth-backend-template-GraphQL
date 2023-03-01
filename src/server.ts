@@ -13,7 +13,23 @@ const port = Number.parseInt(process.env.PORT || "") || 5000;
 const server = new ApolloServer({
   typeDefs: [userTypeDefs],
   resolvers: [userResolvers],
+  formatError: (error) => {
+    const { message, extensions } = error;
+    if (extensions) {
+      const { code } = extensions;
+      if (code) {
+        return { message, extensions };
+      }
+    }
+    return {
+      message: "An error occurred",
+      extensions: {
+        code: "INTERNAL_SERVER_ERROR",
+      },
+    };
+  },
 });
+  
 
 // a function to connect db and and create a stand alone server
 const startServer = async () => {

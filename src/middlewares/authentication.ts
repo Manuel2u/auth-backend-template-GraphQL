@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { GraphQLError } from "graphql";
 
 
 const verifyToken =  async ({ req } : any) => {
@@ -12,7 +13,7 @@ const verifyToken =  async ({ req } : any) => {
       );
 
       if (decoded.exp < Date.now() / 1000) {
-        throw new Error("Token Expired");
+        throw new GraphQLError("Token Expired");
       }
 
       const { id } = decoded;
@@ -22,7 +23,7 @@ const verifyToken =  async ({ req } : any) => {
     }
   } catch (err) {
     console.log(err);
-    throw new Error("Unauthorized access");
+    throw new GraphQLError("Unauthorized access");
   }
 }
 
