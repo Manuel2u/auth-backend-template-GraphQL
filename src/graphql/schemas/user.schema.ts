@@ -8,6 +8,14 @@ input userInputs {
   password: String!
 }
 
+
+
+input signInInput {
+  email_username : String!
+  password : String!
+
+}
+
 type User {
   id: String
   fName: String!
@@ -23,12 +31,17 @@ type newUser {
   access_token : String
 }
 
+type signedInUser {
+  user : User
+}
+
 type Query {
   getUser: User
 }
 
 type Mutation {
   createUser(input : userInputs!): newUser
+  signInUser(input : signInInput!) : signedInUser
 }
 `;
 

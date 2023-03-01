@@ -1,4 +1,4 @@
-import { createUserResolver, getUserResolver } from "./user.resolvers";
+import { createUserResolver, getUserResolver, signInUserResolver } from "./user.resolvers";
 
 const userResolvers = {
   Query: {
@@ -7,6 +7,7 @@ const userResolvers = {
 
   Mutation: {
     createUser: createUserResolver,
+    signInUser : signInUserResolver
   },
 };
 

@@ -7,4 +7,9 @@ type signUpInfo = {
     password : string
 }
 
-export {signUpInfo}
+type signInInfo = {
+    email_username : string,
+    password : string,
+}
+
+export {signUpInfo, signInInfo}

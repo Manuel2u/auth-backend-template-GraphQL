@@ -1,6 +1,6 @@
 import User from "../../models/user.model";
 import GENERATE_TOKEN from "../../utils/token";
-import { signUpUser } from "../../utils";
+import { signInUser, signUpUser } from "../../utils";
 
 const createUserResolver = async (
   parent: any,
@@ -48,7 +48,11 @@ const createUserResolver = async (
   }
 };
 
-const getUserResolver = async ({ id }: { id: string }) => {
+const getUserResolver = async (parent: any, args: any, { id }: any) => {
+  if (!id) {
+    throw new Error("Unauthorized access");
+  }
+
   const user = await User.find({ _id: id });
 
   if (!user) {
@@ -58,4 +62,28 @@ const getUserResolver = async ({ id }: { id: string }) => {
   return user;
 };
 
-export { createUserResolver, getUserResolver };
+const signInUserResolver = async (parent: any, args: any, context: any) => {
+  try {
+    const { email_username, password } = args.input;
+    const info = { email_username, password };
+
+    if (!email_username || !password) {
+      throw new Error("Make sure all inputs are right");
+    }
+
+    const user = await new Promise((resolve, reject) => {
+      signInUser(info, (err: any, user: any) => {
+        if (err) {
+          reject(new Error("Wrong email/username or password"));
+        } else {
+          resolve(user);
+        }
+      });
+    });
+    return { user };
+  } catch (err) {
+    throw new Error(`${err}`);
+  }
+};
+
+export { createUserResolver, getUserResolver, signInUserResolver };
