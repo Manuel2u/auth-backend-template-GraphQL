@@ -4,11 +4,7 @@ import { signInUser, signUpUser } from "../../utils";
 import { GraphQLError } from "graphql";
 import { ApolloError } from "apollo-server-errors";
 
-const createUserResolver = async (
-  parent: any,
-  args: any,
-  contextValue: any
-) => {
+const createUserResolver = async (parent: any, args: any) => {
   try {
     const { fName, lName, username, email, password } = args.input;
 
@@ -18,27 +14,18 @@ const createUserResolver = async (
       throw new GraphQLError("Make sure all inputs are valid");
     }
 
-    const alreadyExistingUser = await User.findOne({ email: email });
+    const alreadyExistingUser = await User.findOne({
+      $or: [{ email }, { username }],
+    });
 
-    const alreadyExistingUser_2 = await User.findOne({ username: username });
-
-    if (alreadyExistingUser || alreadyExistingUser_2) {
+    if (alreadyExistingUser) {
       throw new GraphQLError("User already exists");
     }
 
-    const user: any = await new Promise((resolve, reject) => {
-      signUpUser(info, (err: any, user: any) => {
-        if (err) {
-          reject(new GraphQLError(`${err}`, { extensions: { code: "Erorr" } }));
-        } else {
-          resolve(user);
-        }
-      });
-    });
-
+    const user = await signUpUser(info);
     const { access_token, refresh_token } = GENERATE_TOKEN(user);
-
     user.token = refresh_token;
+
     await user.save();
 
     return {
@@ -46,7 +33,7 @@ const createUserResolver = async (
       access_token,
     };
   } catch (err) {
-    throw err;
+    throw new GraphQLError(`${err}`);
   }
 };
 
@@ -58,7 +45,7 @@ const getUserResolver = async (parent: any, args: any, { id }: any) => {
   const user = await User.find({ _id: id });
 
   if (!user) {
-    // throw new GraphQLError("User not found");
+    throw new GraphQLError("User not found");
   }
 
   return user;
@@ -72,24 +59,11 @@ const signInUserResolver = async (parent: any, args: any, context: any) => {
     if (!email_username || !password) {
       throw new GraphQLError("Make sure all inputs are right");
     }
-
-    const user = await new Promise((resolve, reject) => {
-      signInUser(info, (err: any, user: any) => {
-        if (err) {
-          reject(new GraphQLError("Wrong email/username or password"));
-        } else {
-          resolve(user);
-        }
-      });
-    });
+    const user = await signInUser(info);
 
     return { user };
   } catch (err) {
-    throw new GraphQLError(`${err}`, {
-      extensions: {
-        code: "FORBIDDEN",
-      },
-    });
+    throw new GraphQLError(`${err}`);
   }
 };
 

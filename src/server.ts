@@ -8,28 +8,11 @@ dotenv.config();
 import verifyToken from "./middlewares/authentication";
 const port = Number.parseInt(process.env.PORT || "") || 5000;
 
-
 //creating a new apollo-server instance
 const server = new ApolloServer({
   typeDefs: [userTypeDefs],
   resolvers: [userResolvers],
-  formatError: (error) => {
-    const { message, extensions } = error;
-    if (extensions) {
-      const { code } = extensions;
-      if (code) {
-        return { message, extensions };
-      }
-    }
-    return {
-      message: "An error occurred",
-      extensions: {
-        code: "INTERNAL_SERVER_ERROR",
-      },
-    };
-  },
 });
-  
 
 // a function to connect db and and create a stand alone server
 const startServer = async () => {
@@ -37,7 +20,7 @@ const startServer = async () => {
     // connecting db
     await DB_CONNECT();
     const { url } = await startStandaloneServer(server, {
-      context: ({req}) => verifyToken({req}),
+      context: ({ req }) => verifyToken({ req }),
       listen: { port },
     });
     console.log(`server is running on this url : ${url}`);

@@ -4,51 +4,40 @@ import { signInInfo, signUpInfo } from "../types";
 import { GraphQLError } from "graphql";
 import { ApolloError } from "apollo-server-errors";
 
-const signUpUser = async (info: signUpInfo, callback: any) => {
-  bcrypt.hash(info.password, 10, async (err, hash) => {
-    if (err) {
-      throw new GraphQLError(`error : ${err}`);
-    }
+const signUpUser = async (info: signUpInfo) => {
+  const hash = await bcrypt.hash(info.password, 10);
+  if (!hash) {
+    throw new GraphQLError(`there was an error signing user up`);
+  }
 
-    const user = new User({
-      fName: info.fName,
-      lName: info.lName,
-      username: info.username,
-      email: info.email,
-      password: hash,
-    });
-
-    const savedUser = await user.save();
-    callback(null, savedUser);
+  const user = new User({
+    fName: info.fName,
+    lName: info.lName,
+    username: info.username,
+    email: info.email,
+    password: hash,
   });
+
+  const savedUser = await user.save();
+  return savedUser;
 };
 
-const signInUser = async (info: signInInfo, callbck: any) => {
+const signInUser = async (info: signInInfo) => {
   try {
-    const foundUser_by_email_or_username = await User.findOne({
-      $or: [{ email: info.email_username }, { username: info.email_username }],
+    const { password, email_username } = info;
+    const user = await User.findOne({
+      $or: [{ username: email_username }, { email: email_username }],
     });
 
-    if (foundUser_by_email_or_username) {
-      bcrypt.compare(
-        info.password,
-        foundUser_by_email_or_username?.password || "",
-        (err, success) => {
-          if (success) {
-            callbck(null, foundUser_by_email_or_username);
-          }
-        }
-      );
-    } else {
-      // throw new GraphQLError("User not found");
-      throw new ApolloError("user not found");
-    }
-  } catch (err) {
-    throw new GraphQLError(`${err}`, {
-      extensions: {
-        code: "FORBIDDEN",
-      },
-    });
+    if (!user) return new GraphQLError("wrong email or username");
+
+    const isPasswordmatch = await bcrypt.compare(password, user?.password);
+
+    if (!isPasswordmatch) return new GraphQLError("wrong password");
+
+    return user;
+  } catch (error) {
+    throw new GraphQLError(`${error}`);
   }
 };
 
